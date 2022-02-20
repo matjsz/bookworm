@@ -16,6 +16,7 @@ export default function Landing() {
         setTimeout(() => {
 			getReader(auth.currentUser.uid).then((userData) => {
 				setUserData({
+					id: auth.currentUser.uid,
 					name: auth.currentUser.displayName,
 					email: auth.currentUser.email,
 					avatar: auth.currentUser.photoURL,
@@ -42,7 +43,7 @@ export default function Landing() {
 			
 			<Navbar type='home' userName={userData.name} userEmail={userData.email} userAvatar={userData.avatar} userEmailVerified={userData.verified} />
 
-			<HomePage started={userData.started}></HomePage>
+			<HomePage started={userData.started} uid={userData.id}></HomePage>
 
 			<footer className="p-4 bg-white rounded-lg shadow md:flex md:items-center md:justify-between md:p-6 dark:bg-gray-800" style={{paddingBottom: '15vh'}}>
 				<span className="text-sm text-gray-500 sm:text-center dark:text-gray-400">© 2022 <a href="https://github.com/matsilva/bookworm" className="hover:underline" target="_blank">Bookworm™</a>.
