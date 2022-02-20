@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { activateAccount } from "../utils/activateAccount";
+import BookCategory from "./BookCategory";
 
 class HomePage extends React.Component{
     state = {
@@ -123,12 +124,61 @@ class HomePage extends React.Component{
             </span>)
     }
 
+    setModal = (value) => {
+        this.setState(prevState => ({
+            modal: value
+        }))
+    }
+
     render(){
         if(this.props.started == true){
+            var choosenGenre = this.props.userData.genres[Math.floor(Math.random()*this.props.userData.genres.length)]
+            var choosenAuthor = this.props.userData.authors[Math.floor(Math.random()*this.props.userData.authors.length)]
+            var choosenRecommendation = ['genres', 'authors'][Math.floor(Math.random()*2)]
+
+            if(this.props.userData.completed.length > 0){
+                var choosenFinished = this.props.userData.completed[Math.floor(Math.random()*this.props.userData.completed.length)]
+            }
+
             return(
-                <div style={{paddingBottom: '55vh'}} className="p-4 w-full text-center rounded-lg sm:p-8">
-                    <h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Home</h3>
-                    <p className="mb-5 text-base text-gray-500 sm:text-lg dark:text-gray-400">Ainda não há nada aqui... Mas você já iniciou sua conta!</p>
+                <div style={{paddingBottom: '55vh'}} className="p-4 w-full text-left rounded-lg sm:p-8">
+                    {
+                        this.props.userData.reading.length > 0 ?
+                            <h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Continuar lendo</h3>
+                        :
+                            <></>
+                    }
+                    
+                    <h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Para você</h3>
+
+                    {
+                        this.props.userData.wantTo.length > 0 ?
+                            <h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Comece sua jornada!</h3>
+                        :
+                            <></>
+                    }
+
+                    <h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Mais de {choosenGenre}</h3>
+                    <BookCategory scope="genre" arg={choosenGenre}></BookCategory>
+
+                    {
+                        this.props.userData.completed.length > 0 ?
+                            <h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Leia novamente</h3>
+                        :
+                            <></>
+                    }
+
+                    <h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Obras de {choosenAuthor}</h3>
+                    <BookCategory scope="author" arg={choosenAuthor}></BookCategory>
+
+                    {
+                        this.props.userData.completed.length > 0 ?
+                            <h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Porque você leu {choosenFinished}</h3>
+                        :
+                            <></>
+                    }
+
+                    <h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Talvez você goste</h3>
                 </div>
             )
         } else if(this.props.started == false){
