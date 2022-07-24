@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Book from "./Book";
 
-const emojis = {
+const emojis = {    
     'success': '✔️',
     'error': '❌',
     'warning': '⚠️'
@@ -28,6 +28,15 @@ async function getData(scope, arg){
         
         return data.items
     }
+    else if(scope == 'reading'){
+        return arg
+    }
+    else if(scope == 'wantTo'){
+        return arg
+    }
+    else if(scope == 'completed'){
+        return arg
+    }
 }
 
 export default function BookCategory(props){
@@ -46,7 +55,7 @@ export default function BookCategory(props){
             {books.map((book) => {
                 return(
                     <section class="flex-shrink-0 ml-1 mr-1">
-                        <Book bookData={book}></Book>
+                        <Book bookData={book} userData={props.userData}></Book>
                     </section>
                 )
             })}              
