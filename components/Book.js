@@ -125,6 +125,7 @@ export default function Book(props){
                                     addBookToUser(props.userData.id, 'wantTo', props.bookData)
                                     removeBookFromUser(props.userData.id, 'reading', props.bookData)
                                     removeBookFromUser(props.userData.id, 'completed', props.bookData)
+                                    props.updtFn(props.userData.id)
                                 }}
                                 disabled={wantTo}>
                                 Quero ler!
@@ -137,6 +138,7 @@ export default function Book(props){
                                     addBookToUser(props.userData.id, 'reading', props.bookData)
                                     removeBookFromUser(props.userData.id, 'wantTo', props.bookData)
                                     removeBookFromUser(props.userData.id, 'completed', props.bookData)
+                                    props.updtFn(props.userData.id)
                                 }}
                                 disabled={reading}
                                 >
@@ -150,6 +152,7 @@ export default function Book(props){
                                     addBookToUser(props.userData.id, 'completed', props.bookData)
                                     removeBookFromUser(props.userData.id, 'reading', props.bookData)
                                     removeBookFromUser(props.userData.id, 'wantTo', props.bookData)
+                                    props.updtFn(props.userData.id)
                                 }}
                                 disabled={completed}
                                 >

@@ -5,17 +5,90 @@ import { useState, useEffect } from 'react'
 import Navbar from '../components/Navbar'
 import LandingForm from '../components/LandingForm'
 import { auth } from '../utils/auth'
+import { useRouter } from 'next/router'
+import { onAuthStateChanged } from 'firebase/auth'
+import { newNotification } from '../utils/notificationSystem'
+import { doc, getDoc } from 'firebase/firestore'
+import { db } from '../utils/db'
+
+function setCookie(cname, cvalue, exmins) {
+	const d = new Date();
+	d.setTime(d.getTime() + (exmins * 60 * 1000));
+	let expires = "expires="+d.toUTCString();
+	document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+  
+function getCookie(cname) {
+	let name = cname + "=";
+	let ca = document.cookie.split(';');
+	for(let i = 0; i < ca.length; i++) {
+	  let c = ca[i];
+	  while (c.charAt(0) == ' ') {
+		c = c.substring(1);
+	  }
+	  if (c.indexOf(name) == 0) {
+		return c.substring(name.length, c.length);
+	  }
+	}
+	return "";
+}
+  
+function checkCookie() {
+	let user = getCookie("username");
+	if (user != "") {
+	  alert("Welcome again " + user);
+	} else {
+	  user = prompt("Please enter your name:", "");
+	  if (user != "" && user != null) {
+		setCookie("username", user, 365);
+	  }
+	}
+}
 
 export default function Landing() {
 	const [formAction, setFormAction] = useState('login')
-
-	useEffect(() => {
-		setTimeout(() => {
-			if(auth.currentUser != undefined){
-				window.location = '/home'
-			}
-		}, 2000)
-	}, [])
+	const router = useRouter()
+	
+	onAuthStateChanged(auth, (user) => {
+		if(user){
+			getDoc(doc(db, 'readers', user.uid))
+				.then((userData) => {
+					let userInfo = userData.data()
+					
+					if(Math.random() < 0.5){
+						try {
+							let choosenBook = userInfo.wantTo[Math.floor(Math.random()*userInfo.wantTo.length)]
+		
+							newNotification(user.uid, 'startBookReminder', choosenBook.volumeInfo.title, choosenBook, true, choosenBook.volumeInfo.imageLinks.thumbnail)	
+						} catch (error) {
+							
+						}
+					}
+		
+					if(Math.random() < 0.5){
+						try {
+							let choosenBook = userInfo.completed[Math.floor(Math.random()*userInfo.completed.length)]
+		
+							newNotification(user.uid, 'finishedBookReminder', choosenBook.volumeInfo.title, choosenBook, true, choosenBook.volumeInfo.imageLinks.thumbnail)
+						} catch (error) {
+							
+						}
+					}
+		
+					if(Math.random() < 0.5){
+						try {
+							let choosenBook = userInfo.reading[Math.floor(Math.random()*userInfo.reading.length)]
+		
+							newNotification(user.uid, 'readingBookReminder', choosenBook.volumeInfo.title, choosenBook, true, choosenBook.volumeInfo.imageLinks.thumbnail)
+						} catch (error) {
+							
+						}
+					}
+		
+					router.push('/home')
+				})
+		}	
+	})
 	
 	return (
 		<div style={{backgroundColor: '#111c2e'}}>
@@ -36,10 +109,10 @@ export default function Landing() {
 					<div>
 						<ul className="flex flex-wrap -mb-px" id="AuthTab" data-tabs-toggle="#AuthTabContent" role="tablist">
 							<li className="mr-2" role="presentation">
-								<button onClick={() => {setFormAction('login')}} className="inline-block py-4 px-4 text-sm font-medium text-center text-gray-500 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 active" id="login-tab" data-tabs-target="#login" type="button" role="tab" aria-controls="login" aria-selected="true">Entrar</button>
+								<button onClick={() => {setFormAction('login')}} className={`inline-block py-4 px-4 text-sm font-medium text-center text-gray-500 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 ${formAction == 'login' ? 'active' : ''}`} id="login-tab" data-tabs-target="#login" type="button" role="tab" aria-controls="login" aria-selected={formAction == 'login'}>Entrar</button>
 							</li>
 							<li className="mr-2" role="presentation">
-								<button onClick={() => {setFormAction('register')}} className="inline-block py-4 px-4 text-sm font-medium text-center text-gray-500 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300" id="register-tab" data-tabs-target="#register" type="button" role="tab" aria-controls="register" aria-selected="false">Registrar</button>
+								<button onClick={() => {setFormAction('register')}} className={`inline-block py-4 px-4 text-sm font-medium text-center text-gray-500 rounded-t-lg border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 ${formAction == 'register' ? 'active' : ''}`} id="register-tab" data-tabs-target="#register" type="button" role="tab" aria-controls="register" aria-selected={formAction == 'register'}>Registrar</button>
 							</li>
 						</ul>
 					</div>

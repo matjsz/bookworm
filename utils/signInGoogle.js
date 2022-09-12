@@ -21,6 +21,8 @@ const signInWithGoogle = async() => {
             completed: [],
             reading: [],
             wantTo: [],
+            rank: 0,
+            notifications: [],
             started: false
         })   
 

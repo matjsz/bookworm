@@ -24,6 +24,9 @@ const createEmailUser = async(email, password) => {
             completed: [],
             reading: [],
             wantTo: [],
+            rank: 0,
+            notifications: [],
+            favourites: [],
             started: false
         })   
 

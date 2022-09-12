@@ -134,11 +134,11 @@ class HomePage extends React.Component{
         if(this.props.started == true){
             var genres = ['Ficção', 'Fantasia', 'Terror', 'Suspense', 'Romance', 'Mistério', 'Aventura']
 
-            var choosenGenre = this.props.choosens[2]
-            var choosenAuthor = this.props.choosens[0]
-            var choosenRecommendationGenre =this.props.choosens[4] 
-            var choosenRecommendation = this.props.choosens[3]
-            var choosenFinished = this.props.choosens[1]
+            var choosenGenre = this.props.userData.genres[Math.floor(Math.random())*this.props.userData.genres.length]
+            var choosenAuthor = this.props.userData.authors[Math.floor(Math.random())*this.props.userData.authors.length]
+            var choosenRecommendationGenre = genres[Math.floor(Math.random())*genres.length]
+            var choosenRecommendation = ['author', 'genre'][Math.floor(Math.random())*2]
+            var choosenFinished = this.props.userData.completed[Math.floor(Math.random())*this.props.userData.completed.length]
 
             return(
                 <div style={{paddingBottom: '10vh'}} className="p-4 w-full text-left rounded-lg sm:p-8">
@@ -146,46 +146,46 @@ class HomePage extends React.Component{
                         this.props.userData.reading.length > 0 ?
                             <>
                                 <h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Lendo</h3>
-                                <BookCategory userData={this.props.userData} scope='reading' arg={this.props.userData.reading}></BookCategory>
+                                <BookCategory updtFn={this.props.updtFn} userData={this.props.userData} scope='reading' arg={this.props.userData.reading}></BookCategory>
                             </>
                         :
                             <></>
                     }
                     
                     <h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Descubra</h3>
-                    <BookCategory userData={this.props.userData} scope={'genre'} arg={choosenRecommendationGenre}></BookCategory>
+                    <BookCategory updtFn={this.props.updtFn} userData={this.props.userData} scope={'genre'} arg={choosenRecommendationGenre}></BookCategory>
 
                     {
                         this.props.userData.wantTo.length > 0 ?
                             <>
                                 <h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Comece sua jornada!</h3>
-                                <BookCategory userData={this.props.userData} scope={'wantTo'} arg={this.props.userData.wantTo}></BookCategory>
+                                <BookCategory updtFn={this.props.updtFn} userData={this.props.userData} scope={'wantTo'} arg={this.props.userData.wantTo}></BookCategory>
                             </>
                         :
                             <></>
                     }
 
                     <h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Mais de {choosenGenre}</h3>
-                    <BookCategory userData={this.props.userData} scope="genre" arg={choosenGenre}></BookCategory>
+                    <BookCategory updtFn={this.props.updtFn} userData={this.props.userData} scope="genre" arg={choosenGenre}></BookCategory>
 
                     {
                         this.props.userData.completed.length > 0 ?
                             <>
                                 <h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Leia novamente</h3>
-                                <BookCategory userData={this.props.userData} scope={'completed'} arg={this.props.userData.completed}></BookCategory>
+                                <BookCategory updtFn={this.props.updtFn} userData={this.props.userData} scope={'completed'} arg={this.props.userData.completed}></BookCategory>
                             </>
                         :
                             <></>
                     }
 
                     <h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Obras de {choosenAuthor}</h3>
-                    <BookCategory userData={this.props.userData} scope="author" arg={choosenAuthor}></BookCategory>
+                    <BookCategory updtFn={this.props.updtFn} userData={this.props.userData} scope="author" arg={choosenAuthor}></BookCategory>
 
                     {
                         this.props.userData.completed.length > 0 ?
                             <>
                                 <h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Porque você leu {this.props.userData.completed[Math.floor(Math.random()*this.props.userData.completed.length)].volumeInfo.title}</h3>
-                                <BookCategory userData={this.props.userData} scope={choosenRecommendation} arg={choosenRecommendation == 'genre' ? choosenFinished.volumeInfo.categories[0] : choosenFinished.volumeInfo.authors[0]}></BookCategory>
+                                <BookCategory updtFn={this.props.updtFn} userData={this.props.userData} scope={choosenRecommendation} arg={choosenRecommendation == 'genre' ? choosenFinished.volumeInfo.categories[0] : choosenFinished.volumeInfo.authors[0]}></BookCategory>
                             </>
                             
                         :
@@ -193,7 +193,7 @@ class HomePage extends React.Component{
                     }
 
                     <h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Talvez você goste</h3>
-                    <BookCategory userData={this.props.userData} scope={'genre'} arg={genres[Math.floor(Math.random()*genres.length)]}></BookCategory>
+                    <BookCategory updtFn={this.props.updtFn} userData={this.props.userData} scope={'genre'} arg={genres[Math.floor(Math.random()*genres.length)]}></BookCategory>
                 </div>
             )
         } else if(this.props.started == false){

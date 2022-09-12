@@ -22,7 +22,17 @@ import { addGenre } from '../utils/addGenre';
 import { promote } from '../utils/promoteUser';
 import { demote } from '../utils/demoteUser';
 import { clearNotification, clearNotifications, newNotification } from '../utils/notificationSystem';
-import { useRouter } from 'next/router';
+
+// Conceito da página: uma página de "perfil", com estatísticas do usuário e etc
+
+// Adicionar sistema de notificações em todas as páginas
+
+// O que precisa ter:
+// Banner de perfil parecido com codingame
+// "Ranque" de leitor (Bronze, Prata, Ouro, etc)
+// Amigos
+// Autores favoritos
+// Gêneros favoritos
 
 const categories = {
     'Fiction': 'Ficção e Fantasia',
@@ -63,145 +73,20 @@ const ranks = {
 }
 
 export default function Landing() {
-	const router = useRouter()
-
 	const genresGlobal = ['Ficção', 'Fantasia', 'Terror', 'Suspense', 'Romance', 'Mistério', 'Aventura']
 	
     const [userData, setUserData] = useState({})
 	const [loading, setLoading] = useState(true)
 	const [first, setFirst] = useState(true)
-	const [step, setStep] = useState('intro')
-	const [authors, setAuthors] = useState([])
-	const [actualAuthor, setActualAuthor] = useState('')
-	const [genres, setGenres] = useState([])
-	const [actualGenre, setActualGenre] = useState('')
-	const [modal, setModal] = useState(false)
-	const [booksGenreRec, setBooksGenreRec] = useState([])
-	const [booksAuthorRec, setBooksAuthorRec] = useState([])
-	const [authorChoosen, setAuthorChoosen] = useState([])
-	const [booksRec, setBooksRec] = useState([])
 	const [verificationSent, setVerificationSent] = useState(false)
+	const [startBookReminder, setStartBookReminder] = useState(false)
+	const [finishedBookReminder, setFinishedBookReminder] = useState(false)
+	const [readingBookReminder, setReadingBookReminder] = useState(false)
 
-	function getBook(bookData){
-		return(
-			<section class="flex-shrink-0 ml-1 mr-1">
-				<Book updtFn={updateData} bookData={bookData}></Book>
-			</section>
-		)
-	}
-	
-	async function getData(scope, arg){
-		if(scope == 'author'){
-			const r = await fetch(`https://www.googleapis.com/books/v1/volumes?q=inauthor:${arg}&orderBy=relevance&filter=ebooks`)
-			const data = await r.json()
-			
-			return data.items
-		}
-		else if(scope == 'genre'){
-			const r = await fetch(`https://www.googleapis.com/books/v1/volumes?q=Livros de ${arg}&orderBy=relevance&filter=ebooks`)
-			const data = await r.json()
-			
-			return data.items
-		}
-		else if(scope == 'q'){
-			const r = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${arg}&orderBy=relevance&filter=ebooks`)
-			const data = await r.json()
-
-			return data.items
-		}
-		else if(scope == 'wantTo'){
-			return arg
-		}
-		else if(scope == 'completed'){
-			return arg
-		}
-	}
-
-	const handleChange = (e) => {
-		setActualAuthor(e.target.value)
-	}
-	const handleChangeGenres = (e) => {
-		setActualGenre(e.target.value)
-	}
-	const handleAuthorsAdd = (author) => {
-		if(authors.length < 3){
-			let local = authors
-			local.push(author)
-			setActualAuthor('')
-			setAuthors(local)
-		}
-	}
-	const handleGenresAdd = (genre) => {
-		if(genres.length < 3){
-			let local = genres
-			local.push(genre)
-			setActualGenre('')
-			setGenres(local)
-		}
-	}
-	const handleAuthorsRemove = (author) => {
-		let local = authors
-		local.splice(authors.indexOf(author), 1)
-		setAuthors(local)
-	}
-	const handleGenresRemove = (genre) => {
-		let local = genres
-		local.splice(genres.indexOf(genre), 1)
-		setGenres(local)
-	}
-	const changeStep = (step) => {
-		setStep(step)
-	}
-	const finishSetup = (uid) => {
-		activateAccount(uid, genres, authors)
-	}
-
-	const newAuthor = (name, key) => {
-        const colors = ['gray', 'red', 'yellow', 'green', 'blue', 'indigo', 'purple', 'pink']
-        const thisColor = colors[Math.floor(Math.random()*colors.length)]
-    
-        return (
-            <span key={key} className={`bg-${thisColor}-800 text-gray-200 text-sm font-medium mr-2 px-2.5 py-0.5 rounded`}>
-                {name} 
-                <button onClick={() => {handleAuthorsRemove(name)}} type="button" className="text-white text-xs bg-gray-700 hover:bg-blue-800 focus:ring-4 focus:ring-gray-300 font-medium rounded-full p-1 text-center inline-flex items-center dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 ml-2">
-                    <svg className="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </span>)
-    }
-
-	const newGenre = (name, key) => {
-        const colors = ['gray', 'red', 'yellow', 'green', 'blue', 'indigo', 'purple', 'pink']
-        const thisColor = colors[Math.floor(Math.random()*colors.length)]
-    
-        return (
-            <span key={key} className={`bg-${thisColor}-800 text-gray-200 text-sm font-medium mr-2 px-2.5 py-0.5 rounded`}>
-                {name} 
-                <button onClick={() => {handleGenresRemove(name)}} type="button" className="text-white text-xs bg-gray-700 hover:bg-blue-800 focus:ring-4 focus:ring-gray-300 font-medium rounded-full p-1 text-center inline-flex items-center dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 ml-2">
-                    <svg className="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </span>)
-    }
-
-	function updateData(user){
-		getDoc(doc(db, 'readers', user.uid))
-			.then((userDoc) => {
-				var userInfo = userDoc.data()
-	
-				setUserData({
-					id: user.uid,
-					name: user.displayName,
-					email: user.email,
-					avatar: user.photoURL,
-					authors: userInfo.authors,
-					completed: userInfo.completed,
-					genres: userInfo.genres,
-					reading: userInfo.reading,
-					wantTo: userInfo.wantTo,
-					verified: user.emailVerified,
-					started: userInfo.started	
-				})
-	
-				setLoading(false)
+	const sendVerification = () => {
+		sendEmailVerification(userData.userObj)
+			.then(() => {
+				setVerificationSent(true)
 			})
 	}
 
@@ -329,6 +214,8 @@ export default function Landing() {
 										.then(() => {
 											if(props.userData.completed.length <= ranksPromotion[props.userData.rank-1]){
 												newNotification(props.userData.id, 'rankDemotion', ranks[props.userData.rank-1], '/shelf', true, `/rank${props.userData.rank-1}.png`)
+												.then((notification) => {
+												})
 												demote(props.userData.id)
 											}
 										})
@@ -348,6 +235,8 @@ export default function Landing() {
 										.then(() => {
 											if(props.userData.completed.length <= ranksPromotion[props.userData.rank-1]){
 												newNotification(props.userData.id, 'rankDemotion', ranks[props.userData.rank-1], '/shelf', true, `/rank${props.userData.rank-1}.png`)
+												.then((notification) => {
+												})
 												demote(props.userData.id)
 											}
 										})
@@ -368,6 +257,9 @@ export default function Landing() {
 										.then(() => {
 											if(props.userData.completed.length == ranksPromotion[props.userData.rank]-1){
 												newNotification(props.userData.id, 'rankPromotion', ranks[props.userData.rank+1], '/shelf', true, `/rank${props.userData.rank+1}.png`)
+												.then((notification) => {
+													
+												})
 												promote(props.userData.id)
 											}
 										})
@@ -467,40 +359,21 @@ export default function Landing() {
 		)
 	}
 
-	const sendVerification = () => {
-		sendEmailVerification(userData.userObj)
-			.then(() => {
-				setVerificationSent(true)
-			})
+	function id(){
+		let chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-'
+		let r = ''
+		for(let i=0; i<15; i++){
+			r += chars[Math.floor(Math.random()*chars.length)]
+		}
+		return r
 	}
 
 	onAuthStateChanged(auth, (user) => {
 		if(user){
 			if(first){
-				getDoc(doc(db, "readers", user.uid))
-					.then((data) => {
-						getData('genre', data.data().genres[Math.floor(Math.random()*data.data().genres.length)])
-							.then((books) => {
-								setBooksGenreRec(books)
-							})
-
-						let thisAuthor = data.data().authors[Math.floor(Math.random()*data.data().authors.length)]
-						setAuthorChoosen(thisAuthor)
-						getData('author', thisAuthor)
-							.then((books) => {
-								setBooksAuthorRec(books)
-							})
-
-						let thisGenre = genresGlobal[Math.floor(Math.random()*genresGlobal.length)]
-						getData('genre', thisGenre)
-							.then((books) => {
-								setBooksRec(books)
-							})
-					})
-
 				onSnapshot(doc(db, 'readers', user.uid), (userDoc) => {
 					var userInfo = userDoc.data()
-	
+
 					setUserData({
 						id: user.uid,
 						name: user.displayName,
@@ -516,9 +389,10 @@ export default function Landing() {
 						wantTo: userInfo.wantTo,
 						verified: user.emailVerified,
 						started: userInfo.started,
-						userObj: user
+						userObj: user,
+						joinedIn: new Date(user.metadata.creationTime).toLocaleDateString('pt-BR')
 					})
-		
+
 					setLoading(false)	
 				})
 				setFirst(false)
@@ -545,7 +419,7 @@ export default function Landing() {
 
             <div style={{paddingBottom: '50vh'}} class="p-4 w-full text-center rounded-lg sm:p-8">
 				<h3 class="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Carregando</h3>
-				<p class="mb-5 text-base text-gray-500 sm:text-lg dark:text-gray-400">Escrevendo novas histórias</p>
+				<p class="mb-5 text-base text-gray-500 sm:text-lg dark:text-gray-400">Escrevendo a sua história.</p>
 				<div class="mx-auto">
 					<svg role="status" class="mx-auto w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
 						<path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
@@ -574,7 +448,6 @@ export default function Landing() {
 			<script src="https://unpkg.com/flowbite@1.3.3/dist/flowbite.js"></script>
 		</div>
 		:
-		userData.started ?
 		<div style={{backgroundColor: '#111c2e'}}>
 			<Head>
 				<title>Bookworm | Home</title>
@@ -582,10 +455,8 @@ export default function Landing() {
 				<meta property="og:type" content="website" />
 				<meta property="og:url" content="http://bookworm-site.herokuapp.com" />
 				<meta property="og:image" content="/logo.png" />
-				<meta property="og:description" content="A sua plataforma para organização de leitura." />
+				<meta property="og:description" content="Bookworm." />
 				<meta name="theme-color" content="#FF0000"></meta>
-
-				<script src="https://kit.fontawesome.com/6dadcf0234.js"></script>
 
 				<link rel="stylesheet" href="https://unpkg.com/flowbite@1.3.3/dist/flowbite.min.css" />
 
@@ -594,90 +465,102 @@ export default function Landing() {
 				<script src="https://unpkg.com/flowbite@1.5.3/dist/flowbite.js"></script>
 			</Head>
 			
-			<Navbar type='home' router={router} userData={userData} userNotifications={userData.notifications} userName={userData.name} userEmail={userData.email} userAvatar={userData.avatar} userEmailVerified={userData.verified} />
+			<Navbar type='shelf' userData={userData} userName={userData.name} userNotifications={userData.notifications} userEmail={userData.email} userAvatar={userData.avatar} userEmailVerified={userData.verified} />
 
-			<div style={{minHeight: '100vh'}} className="p-4 w-full text-left rounded-lg sm:p-8">
-				<h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Descubra</h3>
-				<div className="flex overflow-x-auto space-x-8 w-1 ">
-				{
-					booksRec.map((book) => {
-						return(
-							<section class="flex-shrink-0 ml-1 mr-1">
-								<Book updtFn={updateData} bookData={book} userData={userData}></Book>
-							</section>
-						)
-					})
-				}
-				</div>
 
+			<div style={{minHeight: '100vh', overflowX: 'hidden'}} className="p-4 w-full text-left rounded-lg sm:p-8">
 				{
 					userData.verified ?
 						<>
-							{
-								userData.authors.length <= 0 || userData.genres.legnth <= 0 ?
-									<section class="bg-white mt-3 mb-3 rounded-lg dark:bg-gray-900">
-										<div class="py-8 px-4 mx-auto max-w-screen-xl sm:py-16 lg:px-6">
-											<div class="mx-auto max-w-screen-sm text-center">
-												<h2 class="mb-4 text-4xl tracking-tight font-extrabold leading-tight text-gray-900 dark:text-white">Encontre suas obras favoritas</h2>
-												<p class="mb-6 font-light text-gray-500 dark:text-gray-400 md:text-lg">Busque pelos seus autores ou por suas obras favoritas para personalizar seu conteúdo.</p>													
-												<form class="flex items-center" action='/s'>   
-													<label for="simple-search" class="sr-only">Buscar</label>
-													<div class="relative w-full">
-														<div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-															<svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path></svg>
-														</div>
-														<input type="text" id="simple-search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Buscar por Livros ou Autores..." required />
-													</div>
-													<button type="submit" class="p-2.5 ml-2 text-sm font-medium text-white bg-blue-700 rounded-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-														<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-														<span class="sr-only">Buscar</span>
-													</button>
-												</form>
-											</div>
+							<div className="mx-auto text-center">
+								<img className="w-24 mx-auto rounded-full" src={userData.avatar}></img>
+								<div class="mx-auto mt-2 font-medium dark:text-white">
+									<div>{userData.name}</div>
+									<div class="text-sm text-gray-500 dark:text-gray-400">Entrou em {userData.joinedIn}</div>
+								</div>
+								<div class="flex flex-col md:flex-row text-white rounded mt-6 p-3 bg-gray-900">
+									<div class="mx-auto mt-3">
+										<div class="flex flex-row gap-2 font-medium"><svg fill="currentColor" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path d="M353.8 54.1L330.2 6.3c-3.9-8.3-16.1-8.6-20.4 0L286.2 54.1l-52.3 7.5c-9.3 1.4-13.3 12.9-6.4 19.8l38 37-9 52.1c-1.4 9.3 8.2 16.5 16.8 12.2l46.9-24.8 46.6 24.4c8.6 4.3 18.3-2.9 16.8-12.2l-9-52.1 38-36.6c6.8-6.8 2.9-18.3-6.4-19.8l-52.3-7.5zM256 256c-17.7 0-32 14.3-32 32V480c0 17.7 14.3 32 32 32H384c17.7 0 32-14.3 32-32V288c0-17.7-14.3-32-32-32H256zM32 320c-17.7 0-32 14.3-32 32V480c0 17.7 14.3 32 32 32H160c17.7 0 32-14.3 32-32V352c0-17.7-14.3-32-32-32H32zm416 96v64c0 17.7 14.3 32 32 32H608c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32H480c-17.7 0-32 14.3-32 32z"/></svg> Ranque</div>
+										<div class="flex flex-row">
+											<img class="h-24 mx-auto" src={`/rank${userData.rank}.png`}></img>
+											<p class="uppercase my-auto font-bold" data-tooltip-target="popover-rank">{ranks[userData.rank]}</p>
 										</div>
-									</section>
-								:
-									<></>
-							}
 
-							{
-								userData.authors.length > 0 ?
-									<>
-										<h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Obras de {authorChoosen}</h3>
-										<div className="flex overflow-x-auto space-x-8 w-1 ">
-										{
-											booksAuthorRec.length > 0 ? 
-												booksAuthorRec.map((book) => {
-													return(
-														<section class="flex-shrink-0 ml-1 mr-1">
-															<Book updtFn={updateData} bookData={book} userData={userData}></Book>
-														</section>
-													)
-												})
-												:
-												<></>
-										}  
+										<div data-popover="" id="popover-rank" role="tooltip" class="inline-block absolute invisible z-10 w-64 text-sm font-light text-gray-500 bg-white rounded-lg border border-gray-200 shadow-sm opacity-0 transition-opacity duration-300 dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800" style={{position: 'absolute', inset: '0px auto auto 0px', transform: 'translante(0px, 595px'}} data-popper-reference-hidden="" data-popper-escaped="" data-popper-placement="bottom">
+											<div class="py-2 px-3 bg-gray-100 rounded-t-lg border-b border-gray-200 dark:border-gray-600 dark:bg-gray-700">
+												<h3 class="font-semibold text-gray-900 dark:text-white">Ranking</h3>
+											</div>
+											<div class="py-2 px-3">
+												<p>{userData.rank == 5 ? <>Parabéns! Você atingiu o ranque máximo do <strong>Bookworm</strong>!</> : <>Leia mais {ranksPromotion[userData.rank]-userData.completed.length} {ranksPromotion[userData.rank]-userData.completed.length > 1 ? <>livros</> : <>livro</>} para subir de rank!</>}</p>
+											</div>
+											<div data-popper-arrow="" style={{position: 'absolute', left: 0, transform: 'translate(0px, 0px)'}}></div>
 										</div>
-									</>
-									:
-									<>
-									</>
+									</div>
+									<div class="mx-auto mt-3">
+										<div class="flex flex-row gap-2 font-medium"><svg fill="currentColor" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M470.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L192 338.7 425.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg> Livros lidos</div>
+										<p class="text-5xl mt-3 font-bold" data-tooltip-target="popover-completed-books">{userData.completed.length}</p>
+
+										<div data-popover="" id="popover-completed-books" role="tooltip" class="inline-block absolute invisible z-10 w-64 text-sm font-light text-gray-500 bg-white rounded-lg border border-gray-200 shadow-sm opacity-0 transition-opacity duration-300 dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800" style={{position: 'absolute', inset: '0px auto auto 0px', transform: 'translante(0px, 595px'}} data-popper-reference-hidden="" data-popper-escaped="" data-popper-placement="bottom">
+											<div class="py-2 px-3 bg-gray-100 rounded-t-lg border-b border-gray-200 dark:border-gray-600 dark:bg-gray-700">
+												<h3 class="font-semibold text-gray-900 dark:text-white">Livros lidos</h3>
+											</div>
+											<div class="py-2 px-3">
+												<p>{userData.completed.length > 0 ? <>{userData.completed.slice(0, 3).map((book) => {return book.volumeInfo.title}).join(', ')} {userData.completed.length > 3 ? <>{userData.completed.length-3 > 1 ? <>e outros</> : <>e mais</>} {userData.completed.length-3} {userData.completed.length-3 > 1 ? <>livros.</> : <>livro.</>}</> : <></>}</> : <>Nenhum livro :(</>}</p>
+											</div>
+											<div data-popper-arrow="" style={{position: 'absolute', left: 0, transform: 'translate(0px, 0px)'}}></div>
+										</div>
+									</div>
+									<div class="mx-auto mt-3 mb-3">
+										<div class="flex flex-row gap-2 font-medium"><svg fill="currentColor" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path d="M144 160c-44.2 0-80-35.8-80-80S99.8 0 144 0s80 35.8 80 80s-35.8 80-80 80zm368 0c-44.2 0-80-35.8-80-80s35.8-80 80-80s80 35.8 80 80s-35.8 80-80 80zM0 298.7C0 239.8 47.8 192 106.7 192h42.7c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0H21.3C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7h42.7C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3H405.3zM416 224c0 53-43 96-96 96s-96-43-96-96s43-96 96-96s96 43 96 96zM128 485.3C128 411.7 187.7 352 261.3 352H378.7C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7H154.7c-14.7 0-26.7-11.9-26.7-26.7z"/></svg> Seguindo</div>
+										<p class="text-5xl mt-3 font-bold" data-tooltip-target="popover-following">{userData.authors.length}</p>
+
+										<div data-popover="" id="popover-following" role="tooltip" class="inline-block absolute invisible z-10 w-64 text-sm font-light text-gray-500 bg-white rounded-lg border border-gray-200 shadow-sm opacity-0 transition-opacity duration-300 dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800" style={{position: 'absolute', inset: '0px auto auto 0px', transform: 'translante(0px, 595px'}} data-popper-reference-hidden="" data-popper-escaped="" data-popper-placement="bottom">
+											<div class="py-2 px-3 bg-gray-100 rounded-t-lg border-b border-gray-200 dark:border-gray-600 dark:bg-gray-700">
+												<h3 class="font-semibold text-gray-900 dark:text-white">Seguindo</h3>
+											</div>
+											<div class="py-2 px-3">
+												<p>{userData.authors.length > 0 ? <>{userData.authors.slice(0, 3).join(', ')} {userData.authors.length > 3 ? <>{userData.authors.length-3 > 1 ? <>e outros</> : <>e mais</>} {userData.authors.length-3} {userData.authors.length-3 > 1 ? <>autores.</> : <>autor.</>}</> : <></>}</> : <>Nenhum autor :(</>}</p>
+											</div>
+											<div data-popper-arrow="" style={{position: 'absolute', left: 0, transform: 'translate(0px, 0px)'}}></div>
+										</div>
+
+									</div>
+								</div>
+							</div>
+							{
+								userData.favourites.length > 0 ?
+								<>
+									<h3 className="mb-2 mt-6 text-3xl font-bold text-gray-900 dark:text-white">Livros Favoritos</h3>
+									<div className="flex overflow-x-auto space-x-8 w-1 ">
+									{
+										userData.favourites.map((book) => {
+											return(
+												<section class="flex-shrink-0 ml-1 mr-1">
+													<Book bookData={book} userData={userData}></Book>
+												</section>
+											)
+										})
+									}
+									</div>
+								</>
+								:
+								<></>
 							}
 
 							{
 								userData.reading.length > 0 ?
 									<>
-										<h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Lendo</h3>
+										<h3 className="mb-2 mt-6 text-3xl font-bold text-gray-900 dark:text-white">Lendo</h3>
 										<div className="flex overflow-x-auto space-x-8 w-1 ">
-											{
-												userData.reading.map((book) => {
-													return(
-															<section class="flex-shrink-0 ml-1 mr-1">
-																<Book updtFn={updateData} bookData={book} userData={userData}></Book>
-															</section>
-													)
-												})
-											}         
+										{
+											userData.reading.map((book) => {
+												return(
+													<section class="flex-shrink-0 ml-1 mr-1">
+														<Book bookData={book} userData={userData}></Book>
+													</section>
+												)
+											})
+										}
 										</div>
 									</>
 								:
@@ -686,67 +569,45 @@ export default function Landing() {
 
 							{
 								userData.wantTo.length > 0 ?
-									<>
-										<h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Comece sua jornada!</h3>
-										<div className="flex overflow-x-auto space-x-8 w-1 ">
-										{
-											userData.wantTo.map((book) => {
-												return(
-														<section class="flex-shrink-0 ml-1 mr-1">
-															<Book updtFn={updateData} bookData={book} userData={userData}></Book>
-														</section>
-												)
-											})
-										}  
-										</div>
-									</>
+								<>
+									<h3 className="mb-2 mt-6 text-3xl font-bold text-gray-900 dark:text-white">Comece sua jornada</h3>
+									<div className="flex overflow-x-auto space-x-8 w-1 ">
+									{
+										userData.wantTo.map((book) => {
+											return(
+												<section class="flex-shrink-0 ml-1 mr-1">
+													<Book bookData={book} userData={userData}></Book>
+												</section>
+											)
+										})
+									}
+									</div>
+								</>
 								:
-									<></>
+								<></>
 							}
-
-							{
-								userData.genres.length > 0 ?
-									<>
-										<h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Mais do que você gosta</h3>
-										<div className="flex overflow-x-auto space-x-8 w-1 ">
-										{
-											booksGenreRec.length > 0 ? 
-												booksGenreRec.map((book) => {
-													return(
-														<section class="flex-shrink-0 ml-1 mr-1">
-															<Book updtFn={updateData} bookData={book} userData={userData}></Book>
-														</section>
-													)
-												})
-												:
-												<></>
-										}  
-										</div>
-									</>
-										:
-									<></>
-							}
-							
 
 							{
 								userData.completed.length > 0 ?
-									<>
-										<h3 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Leia novamente</h3>
-										<div className="flex overflow-x-auto space-x-8 w-1 ">
-										{
-											userData.completed.map((book) => {
-												return(
-													<section class="flex-shrink-0 ml-1 mr-1">
-														<Book updtFn={updateData} bookData={book} userData={userData}></Book>
-													</section>
-												)
-											})
-										}  
-										</div>
-									</>
+								<>
+									<h3 className="mb-2 mt-6 text-3xl font-bold text-gray-900 dark:text-white">Livros Lidos</h3>
+									<div className="flex overflow-x-auto space-x-8 w-1 ">
+									{
+										userData.completed.map((book) => {
+											return(
+												<section class="flex-shrink-0 ml-1 mr-1">
+													<Book bookData={book} userData={userData}></Book>
+												</section>
+											)
+										})
+									}
+									</div>
+								</>
 								:
-									<></>
+								<></>
 							}
+
+
 						</>
 						:
 						
@@ -792,157 +653,5 @@ export default function Landing() {
 				</ul>
 			</footer>
 		</div>
-		:
-		step == "intro" ?
-			<div style={{backgroundColor: '#111c2e'}}>
-				<Head>
-					<title>Bookworm | Home</title>
-					<meta property="og:title" content="Bookworm" />
-					<meta property="og:type" content="website" />
-					<meta property="og:url" content="http://bookworm-site.herokuapp.com" />
-					<meta property="og:image" content="/logo.png" />
-					<meta property="og:description" content="Bookworm." />
-					<meta name="theme-color" content="#FF0000"></meta>
-
-					<link rel="stylesheet" href="https://unpkg.com/flowbite@1.3.3/dist/flowbite.min.css" />
-
-					<script src="https://www.google.com/books/jsapi.js"></script>
-					<script src="/darkTheme.js"></script>
-					<script src="https://unpkg.com/flowbite@1.5.3/dist/flowbite.js"></script>
-				</Head>
-				
-				<Navbar type='home' userData={userData} userNotifications={userData.notifications} userName={userData.name} userEmail={userData.email} userAvatar={userData.avatar} userEmailVerified={userData.verified} />
-				
-				<div style={{paddingBottom: '55vh'}} className="p-4 w-full text-center rounded-lg sm:p-8">
-					<div className="code-preview rounded-xl bg-gradient-to-r bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-2 sm:p-6 dark:bg-gray-800 mb-6 overflow-scroll">
-						<p className="leading-none dark:text-gray-400">Deseja adicionar seus autores e gêneros favoritos agora?</p>
-					</div>
-
-					<div>
-						<div className="mb-6">
-							<button type="button" class="text-white w-full mb-5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-base px-6 py-3.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" onClick={() => {setStep('authors')}}>Sim</button>
-							<button type="button" class="text-white w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-base px-6 py-3.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" onClick={() => {finishSetup(userData.id)}}>Não</button>
-						</div>
-					</div>
-				</div>
-			</div>
-		:
-		step == "authors" ?
-			<div style={{backgroundColor: '#111c2e'}}>
-				<Head>
-					<title>Bookworm | Home</title>
-					<meta property="og:title" content="Bookworm" />
-					<meta property="og:type" content="website" />
-					<meta property="og:url" content="http://bookworm-site.herokuapp.com" />
-					<meta property="og:image" content="/logo.png" />
-					<meta property="og:description" content="Bookworm." />
-					<meta name="theme-color" content="#FF0000"></meta>
-
-					<link rel="stylesheet" href="https://unpkg.com/flowbite@1.3.3/dist/flowbite.min.css" />
-
-					<script src="https://www.google.com/books/jsapi.js"></script>
-					<script src="/darkTheme.js"></script>
-					<script src="https://unpkg.com/flowbite@1.5.3/dist/flowbite.js"></script>
-				</Head>
-				
-				<Navbar type='home' userData={userData} userNotifications={userData.notifications} userName={userData.name} userEmail={userData.email} userAvatar={userData.avatar} userEmailVerified={userData.verified} />
-				
-				<div style={{paddingBottom: '55vh'}} className="p-4 w-full text-center rounded-lg sm:p-8">
-					<div className="w-full bg-gray-200 mb-6 rounded-full dark:bg-gray-700">
-						<div className="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full" style={{width: `${authors.length == 0 ? 8 : authors.length*16.8}%`}}> {authors.length == 0 ? 0 : Math.floor(authors.length*16.8)}%</div>
-					</div>
-
-					<div className="code-preview rounded-xl bg-gradient-to-r bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-2 sm:p-6 dark:bg-gray-800 mb-6 overflow-scroll">
-						{
-							authors.length == 0 ?
-								<p className="leading-none dark:text-gray-400">Adicione seus autores!</p>
-							:
-								authors.map((author, i) => {
-									return newAuthor(author, i)
-								})
-						}
-					</div>
-
-					<div>
-						<div className="mb-6">
-							<label htmlFor="large-input" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Digite o nome de 3 autores que você gosta e/ou acompanha.</label>
-							<input type="text" value={actualAuthor} onChange={handleChange} className="block p-4 w-full text-gray-900 bg-gray-50 rounded-lg border border-gray-300 sm:text-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" disabled={authors.length == 3} />
-						</div>
-
-						{
-							authors.length < 3 ? 
-								<button onClick={() => {if(!actualAuthor.length == 0) handleAuthorsAdd(actualAuthor)}} type="button" className="py-3 px-5 w-100 text-base font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Adicionar</button>
-							:
-								<div>
-									<p className="text-lg dark:text-white">Tudo certo! Pronto para a próxima etapa?</p>
-									<button onClick={() => {changeStep('genres')}} type="button" className="text-white mt-3 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm p-2.5 text-center inline-flex items-center mr-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-										<svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd"></path></svg>
-									</button>
-								</div>
-						}
-					</div>
-				</div>
-			</div>
-		: step == "genres" ?
-			<div style={{backgroundColor: '#111c2e'}}>
-				<Head>
-					<title>Bookworm | Home</title>
-					<meta property="og:title" content="Bookworm" />
-					<meta property="og:type" content="website" />
-					<meta property="og:url" content="http://bookworm-site.herokuapp.com" />
-					<meta property="og:image" content="/logo.png" />
-					<meta property="og:description" content="Bookworm." />
-					<meta name="theme-color" content="#FF0000"></meta>
-
-					<link rel="stylesheet" href="https://unpkg.com/flowbite@1.3.3/dist/flowbite.min.css" />
-
-					<script src="https://www.google.com/books/jsapi.js"></script>
-					<script src="/darkTheme.js"></script>
-					<script src="https://unpkg.com/flowbite@1.5.3/dist/flowbite.js"></script>
-				</Head>
-				
-				<Navbar type='home' userData={userData} userNotifications={userData.notifications} userName={userData.name} userEmail={userData.email} userAvatar={userData.avatar} userEmailVerified={userData.verified} />
-				
-				<div style={{paddingBottom: '55vh'}} className="p-4 w-full text-center rounded-lg sm:p-8">
-					<div className="w-full bg-gray-200 mb-6 rounded-full dark:bg-gray-700">
-						<div className="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full" style={{width: `${genres.length == 0 ? 50 : 50+genres.length*16.8}%`}}> {genres.length == 0 ? 50 : Math.floor(50+genres.length*16.8)}%</div>
-					</div>
-
-					<div className="code-preview rounded-xl bg-gradient-to-r bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-2 sm:p-6 dark:bg-gray-800 mb-6 overflow-scroll">
-						{
-							genres.length == 0 ?
-								<p className="leading-none dark:text-gray-400">Me diga seus gêneros favoritos!</p>
-							:
-								genres.map((genre, i) => {
-									return newGenre(genre, i)
-								})
-						}
-					</div>
-
-					<div>
-						<div className="mb-6">
-							<label htmlFor="large-input" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Digite 3 gêneros que você gosta.</label>
-							<input type="text" value={actualGenre} onChange={handleChangeGenres} className="block p-4 w-full text-gray-900 bg-gray-50 rounded-lg border border-gray-300 sm:text-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" disabled={genres.length == 3} />
-						</div>
-
-						{
-							genres.length < 3 ? 
-								<button key={'genresButton'} onClick={() => {if(!actualGenre.length == 0) handleGenresAdd(actualGenre)}} type="button" className="py-3 px-5 w-100 text-base font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Adicionar</button>
-							:
-								<div>
-									<p className="text-lg dark:text-white">Sua conta está pronta!</p>
-									<button onClick={() => {changeStep('authors')}} type="button" className="text-white mt-3 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm p-2.5 text-center inline-flex items-center mr-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-										<svg class="w-6 h-6 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-									</button>
-									<button onClick={() => {finishSetup(userData.id)}} type="button" className="text-white mt-3 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm p-2.5 text-center inline-flex items-center mr-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-										<svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd"></path></svg>
-									</button>
-								</div>
-						}
-					</div>
-				</div>
-			</div>
-		:
-			<></>
 	)
 }

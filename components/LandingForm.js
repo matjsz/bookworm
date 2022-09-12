@@ -1,11 +1,48 @@
-import React from "react";
+import React, { useState } from "react";
 import { useEffect } from "react";
 
 // Utils
 import { signInWithGoogle } from "../utils/signInGoogle";
 import { signInWithTwitter } from "../utils/signInTwitter";
 
+function setCookie(cname, cvalue, exmins) {
+	const d = new Date();
+	d.setTime(d.getTime() + (exmins * 60 * 1000));
+	let expires = "expires="+d.toUTCString();
+	document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+  
+function getCookie(cname) {
+	let name = cname + "=";
+	let ca = document.cookie.split(';');
+	for(let i = 0; i < ca.length; i++) {
+	  let c = ca[i];
+	  while (c.charAt(0) == ' ') {
+		c = c.substring(1);
+	  }
+	  if (c.indexOf(name) == 0) {
+		return c.substring(name.length, c.length);
+	  }
+	}
+	return "";
+}
+  
+function checkCookie() {
+	let user = getCookie("username");
+	if (user != "") {
+	  alert("Welcome again " + user);
+	} else {
+	  user = prompt("Please enter your name:", "");
+	  if (user != "" && user != null) {
+		setCookie("username", user, 365);
+	  }
+	}
+}
+
 export default function LandingForm(props){
+    const [eL, setEL] = useState('')
+    const [eR, setER] = useState('')
+
     const googleHandler = () => {
         signInWithGoogle()
             .then((data) => {
@@ -15,6 +52,14 @@ export default function LandingForm(props){
                 console.log(e)
             })
     }
+
+    useEffect(() => {
+        try{
+            setEL(getCookie('eL'))
+            setER(getCookie('eR'))
+        } catch(e){
+        }
+    })
 
     const twitterHandler = () => {
         signInWithTwitter()
@@ -31,6 +76,14 @@ export default function LandingForm(props){
             <div className="p-4 max-w-sm bg-white rounded-lg border border-gray-200 shadow-md sm:p-6 lg:p-8 dark:bg-gray-800 dark:border-gray-700">
                 <form className="space-y-4" action="/auth/login">
                     <h3 className="text-xl font-medium text-gray-900 dark:text-white">Entrar no <b>Bookworm</b></h3>
+                    {
+                        eL != '' && eL != null ?
+                            <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg dark:bg-red-200 dark:text-red-800" role="alert">
+                                {eL}
+                            </div>
+                            :
+                            <></>
+                    }
                     <div className="">
                         <button onClick={() => {googleHandler()}} type="button" style={{paddingRight: '6.4rem'}} className="text-white bg-[#4285F4] hover:bg-[#4285F4]/90 focus:ring-4 focus:ring-[#4285F4]/50 font-medium rounded-lg text-sm px-5 ml-2 py-2.5 text-center inline-flex items-center dark:focus:ring-[#4285F4]/55">
                             <svg className="mr-2 -ml-1 w-4 h-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path></svg>
@@ -51,14 +104,6 @@ export default function LandingForm(props){
                         <input type="password" name="password" placeholder="••••••••" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required/>
                     </div>
                     <div className="flex items-start">
-                        <div className="flex items-start">
-                            <div className="flex items-center h-5">
-                            <input aria-describedby="remember" type="checkbox" className="w-4 h-4 bg-gray-50 rounded border border-gray-300 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800" />
-                            </div>
-                            <div className="ml-2 text-sm">
-                            <label htmlFor="remember" className="font-medium text-gray-900 dark:text-gray-300">Lembrar de mim</label>
-                            </div>
-                        </div>
                         <a href="/auth/password-recovery" className="ml-3 text-sm text-blue-700 hover:underline dark:text-blue-500">Esqueceu sua senha?</a>
                     </div>
                     <button type="submit" className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Entrar</button>
@@ -70,6 +115,14 @@ export default function LandingForm(props){
             <div className="p-4 max-w-sm bg-white rounded-lg border border-gray-200 shadow-md sm:p-6 lg:p-8 dark:bg-gray-800 dark:border-gray-700">
                 <form className="space-y-6" action="/auth/oauth">
                     <h3 className="text-xl font-medium text-gray-900 dark:text-white">Criar uma conta no <b>Bookworm</b></h3>
+                    {
+                        eR != "" && eR != null ?
+                            <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg dark:bg-red-200 dark:text-red-800" role="alert">
+                                {eR}
+                            </div>
+                            :
+                            <></>
+                    }
                     <div>
                         <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Seu email</label>
                         <input type="email" name="email" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="nome@email.com" required/>

@@ -1,20 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Book from "./Book";
 
-const emojis = {    
-    'success': '✔️',
-    'error': '❌',
-    'warning': '⚠️'
-}
-
-function getBook(bookData){
-    return(
-        <section class="flex-shrink-0 ml-1 mr-1">
-            <Book bookData={bookData}></Book>
-        </section>
-    )
-}
-
 async function getData(scope, arg){
     if(scope == 'author'){
         const r = await fetch(`https://www.googleapis.com/books/v1/volumes?q=inauthor:${arg}&orderBy=relevance&filter=ebooks`)
@@ -42,23 +28,20 @@ async function getData(scope, arg){
 export default function BookCategory(props){
     const [books, setBooks] = useState([])
 
-    useEffect(() => {
-        getData(props.scope, props.arg)
-            .then((data) => {
-                console.log(data)
-                setBooks(data)
-            })
-    }, 2000)
+    getData(props.scope, props.arg)
+        .then((data) => {
+            setBooks(data)  
+        })
 
     return(
         <div className="flex overflow-x-auto space-x-8 w-1 ">
-            {books.map((book) => {
+            {books.length > 0 ? books.map((book) => {
                 return(
                     <section class="flex-shrink-0 ml-1 mr-1">
-                        <Book bookData={book} userData={props.userData}></Book>
+                        <Book updtFn={props.updtFn} bookData={book} userData={props.userData}></Book>
                     </section>
                 )
-            })}              
+            }) : <></>}            
         </div>
     )
 }

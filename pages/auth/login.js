@@ -1,11 +1,48 @@
 import Head from 'next/head'
+import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react'
 
 // Components
 import Navbar from '../../components/Navbar'
 import { signInEmail } from '../../utils/signInEmailUser';
 
+function setCookie(cname, cvalue, exmins) {
+	const d = new Date();
+	d.setTime(d.getTime() + (exmins * 60 * 1000));
+	let expires = "expires="+d.toUTCString();
+	document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+  
+function getCookie(cname) {
+	let name = cname + "=";
+	let ca = document.cookie.split(';');
+	for(let i = 0; i < ca.length; i++) {
+	  let c = ca[i];
+	  while (c.charAt(0) == ' ') {
+		c = c.substring(1);
+	  }
+	  if (c.indexOf(name) == 0) {
+		return c.substring(name.length, c.length);
+	  }
+	}
+	return "";
+}
+  
+function checkCookie() {
+	let user = getCookie("username");
+	if (user != "") {
+	  alert("Welcome again " + user);
+	} else {
+	  user = prompt("Please enter your name:", "");
+	  if (user != "" && user != null) {
+		setCookie("username", user, 365);
+	  }
+	}
+}
+
 export default function Landing() {
+	const router = useRouter()
+
     useEffect(() => {
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
@@ -14,7 +51,8 @@ export default function Landing() {
 
         signInEmail(email, password)
             .then((user) => {
-                window.location = '/home'
+				setCookie('eL', '', 5)
+				router.push('/home')
             })
             .catch((e) => {
                 const eCodes = {
@@ -23,8 +61,17 @@ export default function Landing() {
                     'auth/invalid-password': 'A senha inserida está incorreta, tente novamente.'
                 }
 
-                alert(eCodes[e.code])
-				window.location = '/'
+				try{
+					if(eCodes[e] != undefined){
+						setCookie('eL', eCodes[e.code], 5)
+					} else{
+						setCookie('eL', 'Algo deu errado, tente novamente.', 5)
+					}
+				} catch(err){
+					setCookie('eL', 'Algo deu errado, tente novamente.', 5)
+				}
+
+				router.push('/')
             })	
     }, [])
 
