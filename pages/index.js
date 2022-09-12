@@ -97,9 +97,9 @@ export default function Landing() {
 				<meta property="og:title" content="Bookworm" />
 				<meta property="og:type" content="website" />
 				<meta property="og:url" content="http://bookworm-site.herokuapp.com" />
-				<meta property="og:image" content="/logo.png" />
-				<meta property="og:description" content="Bookworm." />
-				<meta name="theme-color" content="#FF0000"></meta>
+				<meta property="og:image" content="/logo white.png" />
+				<meta property="og:description" content="A sua plataforma para organização de leitura." />
+				<meta name="theme-color" content="#111c2e"></meta>
 
 				<link rel="stylesheet" href="https://unpkg.com/flowbite@1.3.3/dist/flowbite.min.css" />
 			</Head>
