@@ -102,6 +102,7 @@ export default function Landing() {
 				<meta name="theme-color" content="#111c2e"></meta>
 
 				<link rel="stylesheet" href="https://unpkg.com/flowbite@1.3.3/dist/flowbite.min.css" />
+				<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3359298419174075" crossorigin="anonymous"></script>
 			</Head>
 
 			<div className="lg:flex">
